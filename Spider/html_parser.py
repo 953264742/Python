@@ -47,7 +47,7 @@ class HtmlParser(object):
             date_p = ams.find('p', attrs={'class':'date-box'})
             whole_url_path = urlparse.urljoin(root_url,link_suffix)
             date_content = date_p.get_text()
-            # #对比时间，获取最新的下载链接
+            #对比时间，获取最新的下载链接，第一次运行时请注释掉
             last_craw_data = data_manager.datamanager.find_data_link_lastnew()
             if last_craw_data:
                 last_time_content = last_craw_data.get('publishDate')

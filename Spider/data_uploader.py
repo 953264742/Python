@@ -20,6 +20,8 @@ class DataUploader(object):
         # logging.basicConfig(level=logging.DEBUG)
         # leancloud.use_region('CN') # 默认启用中国节点
 
+
+    #上传爬取的云盘存储地址
     def upload_data_save_url(self,dataURL,city,publishDate,isDownload,rootURL,excelYunPanURL):
         TodoFolder = leancloud.Object.extend('YaoHaoRankingDataAddress')
         todo_folder = TodoFolder()
@@ -30,8 +32,11 @@ class DataUploader(object):
         todo_folder.set(constant.KRootURL,rootURL)
         todo_folder.set(constant.KExcel_Yun_URL,excelYunPanURL)
         todo_folder.set(constant.KExcel_download_URL, [])
+        todo_folder.set(constant.KISAnalyzed_Excel, False)
 
         todo_folder.save()
+
+    #上传Excel的的下载地址
     def update_data_withExcelDownloadURL(self,yun_object,excelDownLoadURL,title):
         if yun_object is None:
             print('云对象为空')
@@ -50,5 +55,57 @@ class DataUploader(object):
             yun_object.set(constant.KExcel_download_URL, [{constant.KBuilding_Yun_URL:excelDownLoadURL,constant.KBuilding_title:title}])
         yun_object.set(constant.KIsDownload_Key, True)
         yun_object.save()
+
+    #更新Excel数据已被分析的状态
+    def update_data_withExcelAnalyzed(self,yun_object,isAnalyzed):
+        if yun_object is None:
+            print('云对象为空')
+            return;
+        yun_object.set(constant.KISAnalyzed_Excel, True)
+        yun_object.save()
+
+
+    #上传解析后Excel数据到leancloud，
+    #优化 上传时应该分段上传
+    def upload_excel_ranking(self,data_array):
+        TodoFolder = leancloud.Object.extend('YaoHaoRankingExcelData')
+        leanObjects = []
+        for item in data_array:
+            todo_folder = TodoFolder()
+            todo_folder.set(constant.KRank_Key, item[constant.KRank_Key])
+            todo_folder.set(constant.KSerial_Key, item[constant.KSerial_Key])
+            todo_folder.set(constant.KTitle_Key, item[constant.KTitle_Key])
+            todo_folder.set(constant.KDate_Key, item[constant.KDate_Key])
+            leanObjects.append(todo_folder)
+        todo_folder.save_all(leanObjects)
+
+    #添加新的列属性到LeanCloud
+    def add_classKey(self,keyName,className):
+        YaoHaoRankingDataAddress = leancloud.Object.extend(className)
+        if YaoHaoRankingDataAddress:
+            countQuery = leancloud.Query(YaoHaoRankingDataAddress)
+            totalCount = countQuery.count()
+
+            self.query_all(totalCount)
+
+        def query_all(self,totoalCount,skip = 0,limit = 100):
+            if skip >= totoalCount:
+                return;
+
+            YaoHaoRankingDataAddress = leancloud.Object.extend('YaoHaoRankingDataAddress')
+            if YaoHaoRankingDataAddress:
+                query = leancloud.Query(YaoHaoRankingDataAddress)
+                query.skip = skip 
+                query.limit = limit
+                findProperptyArray = query.find()
+            
+                if len(findProperptyArray) > 0:
+                    for item in findProperptyArray:
+                        item.set(constant.KISAnalyzed_Excel,False)
+
+                    YaoHaoRankingDataAddress.save_all(findProperptyArray)
+                    #递归继续查询
+                    self.query_all(totoalCount,skip+limit)
+
 
 
