@@ -75,7 +75,7 @@ class SpiderMain(object):
 
     #爬取链接下的地址
     def crow_download_excel_url(self):
-        baidu_pan_urls = data_manager.datamanager.data_need_download
+        baidu_pan_urls = data_manager.datamanager.find_all_data_not_download()
         if baidu_pan_urls:
            data_property = baidu_pan_urls.pop()
            yunPan_urls = data_property.get(constant.KExcel_Yun_URL)
@@ -85,6 +85,7 @@ class SpiderMain(object):
     def craw_array_excel_url(self,array,yunPorperty):
         if array is None or len(array) == 0:
             self.crow_download_excel_url()
+            return;
         yun_pan_url = array.pop()
         print(yun_pan_url)
         if yun_pan_url:
@@ -109,7 +110,7 @@ class SpiderMain(object):
             self.analyze_excel_array(excel_address_array,date,property)
       
 
-# [{"yunPanURL":"https://pan.baidu.com/s/1xPxs68X51WFloiIYILvncg","buildingTitle":"2018年5月14日瀚城新天地4栋刚需登记购房人公证摇号排序结果"},{"yunPanURL":"https://pan.baidu.com/s/1oG9ahybH_yluuID2aru1dA","buildingTitle":"2018年5月14日瀚城新天地4栋棚改货币化安置住户公证摇号排序结果"},{"yunPanURL":"https://pan.baidu.com/s/19CTFm1MdH0Znhwkb61Qtxw",
+# [{"yunPanURL":"https://pan.baidu.com/s/1xPxs68X51WFloiIYILvncg","bbuildingTitle":"2018年5月14日瀚城新天地4栋刚需登记购房人公证摇号排序结果"},{"yunPanURL":"https://pan.baidu.com/s/1oG9ahybH_yluuID2aru1dA","buildingTitle":"2018年5月14日瀚城新天地4栋棚改货币化安置住户公证摇号排序结果"},{"yunPanURL":"https://pan.baidu.com/s/19CTFm1MdH0Znhwkb61Qtxw",
 # "buildingTitle":"2018年5月14日瀚城新天地4栋普通登记购房人公证摇号排序结果"}]
 # #解析Excel数组里面每条地址
     def analyze_excel_array(self,array,date,yunPorperty):
@@ -133,11 +134,14 @@ class SpiderMain(object):
     def upload_excel_data(self,data_array):
         self.uploader.upload_excel_ranking(data_array)
 
+#可以新增一个检查重复的方法，有则只update下载地址,
+#由于再进行检查会多一次网络请求，所以暂时不检查了，重复就取第一条
 if __name__ == "__main__":
     
+    #爬取成都公证处
     rootURL = "http://www.cdgzc.com/gongshigonggao"
     spiderman = SpiderMain()
     spiderman.crow_page(rootURL,"成都")
-    #spiderman.crow_download_excel_url()
+    spiderman.crow_download_excel_url()
     spiderman.analyze_excel_ranking_data()
 

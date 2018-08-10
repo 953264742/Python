@@ -20,16 +20,30 @@ class HtmlParser(object):
 
     #爬取所有页面地址，第几页
     def parse_all_pages(self,web_data,root_url):
-        page_urls = set()
+        page_urls = []
         soup = BeautifulSoup(web_data,"html.parser")
         pageElement = soup.find('div', attrs={'id':'page'}, recursive=True, text=None, kwargs='')
         page_A_elements = pageElement.findAll('a')
 
+        totalPage = None
         for a in page_A_elements:
-            url_suffix = a['href']
-            whole_url = urlparse.urljoin(root_url,url_suffix)
+            if a.get_text() == "末页".decode('utf-8'):
+                url_suffix = a['href']
+                index_Location = url_suffix.index('_')
+                dot_html_Location = url_suffix.index('.')
+                totalPage =  url_suffix[index_Location+1:dot_html_Location]
+                print('totalPage',totalPage)
+                break
+
+        for i in range(1,int(totalPage)+1):
+            urlPage = "gongshigonggao/index_%d.html" % (i)
+            whole_url = urlparse.urljoin(root_url,urlPage)
+            if i == 1:
+                whole_url = whole_url.replace("_1","")
             if validators.url(whole_url):
-                page_urls.add(whole_url)
+                page_urls.append(whole_url)
+
+            print('pageURL:',page_urls)
 
         return page_urls
 
@@ -52,10 +66,10 @@ class HtmlParser(object):
             if last_craw_data:
                 last_time_content = last_craw_data.get('publishDate')
                 print('leanData',last_time_content)
-                print('time',last_time_content)
+                print('time',date_content)
                 #没有最新的资料
                 if  last_time_content >= date_content:
-                    return None;
+                    return new_urls;
 
             if validators.url(whole_url_path):
                 userful_data = {"url":whole_url_path,"date":date_content}

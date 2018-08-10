@@ -34,7 +34,7 @@ class UrlManager(object):
         return True
 
     def get_url(self):
-        url  = self.new_urls.pop()
+        url  = self.new_urls.pop(0)
         self.old_urls.append(url)
         return url
 

@@ -69,15 +69,18 @@ class DataUploader(object):
     #优化 上传时应该分段上传
     def upload_excel_ranking(self,data_array):
         TodoFolder = leancloud.Object.extend('YaoHaoRankingExcelData')
-        leanObjects = []
+        # leanObjects = []
         for item in data_array:
             todo_folder = TodoFolder()
             todo_folder.set(constant.KRank_Key, item[constant.KRank_Key])
             todo_folder.set(constant.KSerial_Key, item[constant.KSerial_Key])
             todo_folder.set(constant.KTitle_Key, item[constant.KTitle_Key])
             todo_folder.set(constant.KDate_Key, item[constant.KDate_Key])
-            leanObjects.append(todo_folder)
-        todo_folder.save_all(leanObjects)
+            # leanObjects.append(todo_folder)
+            try:
+               todo_folder.save()
+            except Exception as e:
+               print('error',e)
 
     #添加新的列属性到LeanCloud
     def add_classKey(self,keyName,className):
