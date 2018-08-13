@@ -26,7 +26,7 @@ class DataUploader(object):
         TodoFolder = leancloud.Object.extend('YaoHaoRankingDataAddress')
         todo_folder = TodoFolder()
         todo_folder.set(constant.KLink_URL_Key, dataURL)
-        todo_folder.set(constant.KLink_URL_Key, city)
+        todo_folder.set(constant.KCity_Key, city)
         todo_folder.set(constant.KPublish_Key, publishDate)
         todo_folder.set(constant.KIsDownload_Key, isDownload)
         todo_folder.set(constant.KRootURL,rootURL)
@@ -46,13 +46,7 @@ class DataUploader(object):
             return;
         link_Url = yun_object.get(constant.KLink_URL_Key)
         current_yun_object = data_manager.datamanager.find_data_object_with_LinkURL(link_Url)
-        before_DownLoad_URL = current_yun_object.get(constant.KExcel_download_URL)
-        print('before_DownLoad_URL',before_DownLoad_URL)
-        if before_DownLoad_URL:
-            before_DownLoad_URL.append({constant.KBuilding_Yun_URL:excelDownLoadURL,constant.KBuilding_title:title})
-            yun_object.set(constant.KExcel_download_URL, before_DownLoad_URL)
-        else:
-            yun_object.set(constant.KExcel_download_URL, [{constant.KBuilding_Yun_URL:excelDownLoadURL,constant.KBuilding_title:title}])
+        yun_object.set(constant.KExcel_download_URL, [{constant.KBuilding_Yun_URL:excelDownLoadURL,constant.KBuilding_title:title}])
         yun_object.set(constant.KIsDownload_Key, True)
         yun_object.save()
 
@@ -64,6 +58,13 @@ class DataUploader(object):
         yun_object.set(constant.KISAnalyzed_Excel, True)
         yun_object.save()
 
+    #更新下载地址已被获取的状态
+    def reset_data_not_analyzed_to_not_download(self,yun_object,isDownload):
+        if yun_object is None:
+            print('云对象为空')
+            return;
+        yun_object.set(constant.KIsDownload_Key, False)
+        yun_object.save()
 
     #上传解析后Excel数据到leancloud，
     #优化 上传时应该分段上传

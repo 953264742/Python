@@ -43,7 +43,7 @@ class HtmlParser(object):
             if validators.url(whole_url):
                 page_urls.append(whole_url)
 
-            print('pageURL:',page_urls)
+        print('pageURL:',page_urls)
 
         return page_urls
 

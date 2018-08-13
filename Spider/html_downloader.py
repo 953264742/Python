@@ -29,6 +29,8 @@ class HtmlDownloader(object):
     def download_excel(self,url,name):
         file_path = os.path.dirname("/Users/kanglin/Python/data/")
         local = os.path.join(file_path,name)
+        print('loalExcel')
+        print(local)
         urllib.urlretrieve(url,local,self.progress)
 
 

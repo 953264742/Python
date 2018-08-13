@@ -87,7 +87,6 @@ class SpiderMain(object):
             self.crow_download_excel_url()
             return;
         yun_pan_url = array.pop()
-        print(yun_pan_url)
         if yun_pan_url:
            firstURl = yun_pan_url[constant.KBuilding_Yun_URL] + "?adapt=pc&fr=ftw"
            sign,timestamp,uk,shareid,fid_list,bdstoken = self.parser.get_sign(firstURl)
@@ -96,13 +95,13 @@ class SpiderMain(object):
            print(donwload_url)
            title = yun_pan_url[constant.KBuilding_title]
            self.uploader.update_data_withExcelDownloadURL(yunPorperty,donwload_url,title)
-        
 
         self.craw_array_excel_url(array,yunPorperty)
 
     #解析Excel摇号排名数据
     def analyze_excel_ranking_data(self):
         property = data_manager.datamanager.find_data_not_analyzied()
+        print('property',property)
         if property:
             excel_address_array = property.get(constant.KExcel_download_URL)
             date = property.get('publishDate')
@@ -134,6 +133,12 @@ class SpiderMain(object):
     def upload_excel_data(self,data_array):
         self.uploader.upload_excel_ranking(data_array)
 
+
+    #重置已获取下载地址标志，方便重新获取下载地址
+    def reset_data_notAnalyzed_to_notDownload(self):
+        data_manager.datamanager.find_data_not_analyzied()
+        for item in data_manager.datamanager.dataNotAnalyzed:
+            self.uploader.reset_data_not_analyzed_to_not_download(item,False)
 #可以新增一个检查重复的方法，有则只update下载地址,
 #由于再进行检查会多一次网络请求，所以暂时不检查了，重复就取第一条
 if __name__ == "__main__":
@@ -141,7 +146,12 @@ if __name__ == "__main__":
     #爬取成都公证处
     rootURL = "http://www.cdgzc.com/gongshigonggao"
     spiderman = SpiderMain()
+    #爬取云盘地址
     spiderman.crow_page(rootURL,"成都")
+    #重置下载
+    #spiderman.reset_data_notAnalyzed_to_notDownload()
+    #获取Excel下载地址
     spiderman.crow_download_excel_url()
+    #分析Excel排名数据
     spiderman.analyze_excel_ranking_data()
 

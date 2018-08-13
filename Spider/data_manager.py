@@ -18,6 +18,7 @@ class DataManager(object):
         logging.basicConfig(level=logging.DEBUG)
         leancloud.use_region('CN') # 默认启用中国节点
         self.dataNotDonwLoad = []
+        self.dataNotAnalyzed = []
 
     #找到最新的那一条数据
     def find_data_link_lastnew(self):
@@ -50,11 +51,10 @@ class DataManager(object):
         
         return None
 
-    #获取所有没有下载excel的数据
+    #获取所有没有获取下载地址的excel的数据
     def find_all_data_not_download(self):
         if len(self.dataNotDonwLoad) > 0:
             return self.dataNotDonwLoad
-            
         YaoHaoRankingDataAddress = leancloud.Object.extend('YaoHaoRankingDataAddress')
         if YaoHaoRankingDataAddress:
             try:
@@ -64,7 +64,7 @@ class DataManager(object):
                 find_property = query.find()
                 if find_property:
                     self.dataNotDonwLoad = find_property
-                    return find_property
+                    return self.dataNotDonwLoad
             except Exception as e:
                 return None
         
@@ -73,25 +73,31 @@ class DataManager(object):
 
     #获取没有解析Excel的数据
     def find_data_not_analyzied(self):
+        #查询过数据库后，直接返回数组中的数据
+        if len(self.dataNotAnalyzed) > 0:
+            find_property = self.dataNotAnalyzed.pop()
+            return find_property
+
+        #先查找数据库
         YaoHaoRankingDataAddress = leancloud.Object.extend('YaoHaoRankingDataAddress')
         if YaoHaoRankingDataAddress:
             try:
                 query = leancloud.Query(YaoHaoRankingDataAddress)
                 query.equal_to(constant.KISAnalyzed_Excel,False)
                 query.add_descending("publishDate")
-                # query.not_equal_to(constant.KExcel_download_URL,[])
-                # query.add_descending("publishDate")
-                find_property = query.first()
-                excel_download_array = find_property.get(constant.KExcel_download_URL)
-                if excel_download_array is None:
+                self.dataNotAnalyzed = query.find()
+                if len(self.dataNotAnalyzed) == 0:
                     return None;
-                if len(excel_download_array) > 0:
-                    return find_property
+                find_property = self.dataNotAnalyzed.pop()
+                return find_property
+
             except Exception as e:
+                print(e)
                 return None
             
         return None
 
+ 
 
     #解析Excel选房排名数据
     def analysis_excel_choseHouseOrder_data(self,name,callBack,title = "",date = ""):
