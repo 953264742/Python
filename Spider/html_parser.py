@@ -1,4 +1,3 @@
-
 # encoding: utf-8
 from bs4 import BeautifulSoup
 from urllib2 import urlopen
@@ -16,8 +15,8 @@ class HtmlParser(object):
     """docstring for HtmlParser"""
     def __init__(self):
         super(HtmlParser, self).__init__()
-    
 
+    """成都公证处"""
     #爬取所有页面地址，第几页
     def parse_all_pages(self,web_data,root_url):
         page_urls = []
@@ -187,7 +186,7 @@ class HtmlParser(object):
         }
 
         response = requests.post(document_url,headers=header,params=params,data=data)
-        # print('response:',response.text)
+        # print('response:',response.text)b
         # print('header:',response.url)
         dlink_result = re.search(r'"dlink":"(.+?)"',response.text)
         if dlink_result is None:
@@ -197,10 +196,12 @@ class HtmlParser(object):
             if erro_result:
                 erro_num = erro_result.group(1)
                 if erro_num == '-20':
-                   inputContent,vcode = self.get_vcode(bdstoken)
-                   print('inputContent,vcode',inputContent,vcode)
-                   return self.get_download_url(document_url,sign,timestamp,uk,shareid,fid_list,bdstoken,inputContent,vcode)
-           
+                   # inputContent,vcode = self.get_vcode(bdstoken)
+                   # print('inputContent,vcode',inputContent,vcode)
+                   # return self.get_download_url(document_url,sign,timestamp,uk,shareid,fid_list,bdstoken,inputContent,vcode)
+                   # 让其停止，下次再下载解析
+                   print("遇到需要输入验证码！停止获取下载地址")
+                   return None
         else:
             #下载地址
             dlink = dlink_result.group(1)
@@ -264,3 +265,60 @@ class HtmlParser(object):
 
         return vcode_content,vcode;
 
+
+    """成都房协会"""
+    #爬取所有页面地址，第几页
+    def parse_House_Info(self,web_data,root_url):
+        soup = BeautifulSoup(web_data,"html.parser")
+        pageElements = soup.findAll('span', attrs={'class':'sp_name'}, recursive=True, text=None, kwargs='')
+
+        totalPage = None
+        detailURLs = []
+        elementLength = len(pageElements)
+        for i in range(1,elementLength) :
+            index = elementLength - i
+            span = pageElements[index]
+            a = span.find("a")
+            url_suffix = a['href']
+            whole_url = urlparse.urljoin(root_url,url_suffix)
+            detailURLs.append(whole_url)
+            print('whole_url:',whole_url)
+        return detailURLs
+
+    #爬取房源文件下载地址
+    def parse_House_Detail(self,web_data,url):
+        page_urls = []
+        soup = BeautifulSoup(web_data,"html.parser")
+        mainElement = soup.find('div', attrs={'class':'infor'}, recursive=True, text=None, kwargs='')
+        title = mainElement.find('span', attrs={'style':'font-family:宋体;font-size:18pt;'}, recursive=True, text=None, kwargs='').get_text()
+
+        pElements =  mainElement.findAll('p', attrs={'class':'MsoNormal'}, recursive=True, text=None, limit=None, kwargs='')
+        tel = ""
+        date = ""
+        sourceURL = ""
+        PriceURL = ""
+        
+        spans = mainElement.findAll('span')
+        for span in spans:
+            textContent = span.get_text()
+            date_result = re.search(r'\d{4}-\d{1,2}-\d{1,2}',textContent)
+            tel_result = re.search(r'\d{3}-\d{6,9}',textContent)
+            if date_result:
+                date = date_result.group(0)
+            if tel_result:
+                tel = tel_result.group(0)
+
+        #时间检查
+        aElements = mainElement.findAll('a',attrs={'target':'_blank'})
+        for a in aElements:
+            if (a is None) == False and a.get_text() == "购房登记规则及房源表点击下载".decode('utf-8'):
+                sourceURL = a['href']
+            if (a is None) == False and a.get_text() == "成品住房装修方案价格表点击下载".decode('utf-8'):
+                PriceURL = a['href']
+
+        print('findInfo',title,tel,date,sourceURL,PriceURL,url)
+    # def upload_House_Orign_Info(self,houseName,onMarketDate,tel,sourceURL,docoratePlan):
+        return title,date,tel,sourceURL,PriceURL,url
+
+
+       

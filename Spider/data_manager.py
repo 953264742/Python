@@ -7,8 +7,6 @@ import xlrd
 # import xlwt
 import os
 import constant
-
-
 class DataManager(object):
     """docstring for DataManager"""
     def __init__(self):
@@ -71,7 +69,7 @@ class DataManager(object):
         return None
 
 
-    #获取没有解析Excel的数据
+    #获取没有解析Excel的数据,
     def find_data_not_analyzied(self):
         #查询过数据库后，直接返回数组中的数据
         if len(self.dataNotAnalyzed) > 0:
@@ -84,7 +82,7 @@ class DataManager(object):
             try:
                 query = leancloud.Query(YaoHaoRankingDataAddress)
                 query.equal_to(constant.KISAnalyzed_Excel,False)
-                query.add_descending("publishDate")
+                query.add_ascending("publishDate")
                 self.dataNotAnalyzed = query.find()
                 if len(self.dataNotAnalyzed) == 0:
                     return None;
@@ -98,6 +96,23 @@ class DataManager(object):
         return None
 
  
+    #获取没有解析Excel的数据,
+    def find_all_data_not_analyzied(self):
+        #先查找数据库
+        YaoHaoRankingDataAddress = leancloud.Object.extend('YaoHaoRankingDataAddress')
+        if YaoHaoRankingDataAddress:
+            try:
+                query = leancloud.Query(YaoHaoRankingDataAddress)
+                query.equal_to(constant.KISAnalyzed_Excel,False)
+                query.add_ascending("publishDate")
+                find_properties = query.find()
+                return find_properties
+
+            except Exception as e:
+                print(e)
+                return None
+            
+        return None
 
     #解析Excel选房排名数据
     def analysis_excel_choseHouseOrder_data(self,name,callBack,title = "",date = ""):
@@ -122,5 +137,38 @@ class DataManager(object):
 
         callBack(data_array)
 
+
+    """成都房协"""
+    #找到最新的那一条数据
+    def find_Housedata_lastnew(self):
+        ChengduAssociationHouseData = leancloud.Object.extend('ChengduAssociationHouseData')
+        if ChengduAssociationHouseData:
+            try:
+                query = leancloud.Query(ChengduAssociationHouseData)
+                query.add_descending(constant.KDate_Key)
+                find_property = query.first()
+                if find_property:
+                    return find_property
+            except Exception as e:
+                return None
+            
+        return None
+
+    #找到所有没有分析的数据
+    def find_Housedata_not_Analyzed(self):
+        ChengduAssociationHouseData = leancloud.Object.extend('ChengduAssociationHouseData')
+        if ChengduAssociationHouseData:
+            try:
+                query = leancloud.Query(ChengduAssociationHouseData)
+                query.add_descending(constant.KDate_Key)
+                query.equal_to(constant.KPropject_isAnalyzed,False)
+                find_property = query.find()
+                if find_property:
+                    return find_property
+            except Exception as e:
+                print e
+                return None
+            
+        return None
 
 datamanager = DataManager()

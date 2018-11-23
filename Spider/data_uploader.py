@@ -20,7 +20,9 @@ class DataUploader(object):
         # logging.basicConfig(level=logging.DEBUG)
         # leancloud.use_region('CN') # 默认启用中国节点
 
-
+    """
+    成都公证处
+    """
     #上传爬取的云盘存储地址
     def upload_data_save_url(self,dataURL,city,publishDate,isDownload,rootURL,excelYunPanURL):
         TodoFolder = leancloud.Object.extend('YaoHaoRankingDataAddress')
@@ -113,3 +115,20 @@ class DataUploader(object):
 
 
 
+    """
+    成都房协会方法
+    """
+
+    #上传爬取的房源信息
+    def upload_House_Orign_Info(self,houseName,onMarketDate,tel,sourceURL,priceURL,pageURL,city):
+        TodoFolder = leancloud.Object.extend('ChengduAssociationHouseData')
+        todo_folder = TodoFolder()
+        todo_folder.set(constant.KTitle_Key, houseName)
+        todo_folder.set(constant.KDate_Key, onMarketDate)
+        todo_folder.set(constant.KPropject_Consult_Phone, tel)
+        todo_folder.set(constant.KRegister_Regulation_House_Source_URL, sourceURL)
+        todo_folder.set(constant.KDocorate_Scheme_URL,priceURL)
+        todo_folder.set(constant.KPageURL,pageURL)
+        todo_folder.set(constant.KCity_Key,city)
+        todo_folder.set(constant.KPropject_isAnalyzed,False)
+        todo_folder.save()

@@ -2,7 +2,7 @@
 import urllib
 import urllib2
 import os
-
+import ssl
 
 
 class HtmlDownloader(object):
@@ -14,7 +14,10 @@ class HtmlDownloader(object):
         if url is None:
             return None
 
-        response = urllib2.urlopen(url)
+        context = None
+        if url.startswith('https'):
+            context = ssl._create_unverified_context()
+        response = urllib2.urlopen(url,context=context)
 
         if response.getcode() != 200:
             return None
@@ -24,13 +27,15 @@ class HtmlDownloader(object):
         per = 100.0 * a * b / c
         if per > 100 :
              per = 100
-        print '%.2f%%' % per
+        print ('%.2f%%' % per)
 
-    def download_excel(self,url,name):
-        file_path = os.path.dirname("/Users/kanglin/Python/data/")
-        local = os.path.join(file_path,name)
-        print('loalExcel')
-        print(local)
+    def download_file(self,url,saveDirectory,name):
+        local = os.path.join(saveDirectory,name)
+        print('loalExcel',local)
+        if os.path.isfile(local):
+            print('想要下载的文件文件已存在')
+            return;
+        ssl._create_default_https_context = ssl._create_unverified_context
         urllib.urlretrieve(url,local,self.progress)
 
 
